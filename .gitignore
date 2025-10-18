@@ -65,3 +65,7 @@ Thumbs.db
 
 # vs code
 .vscode/
+
+# public images
+/public/img
+/img/**

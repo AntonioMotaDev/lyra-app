@@ -46,14 +46,14 @@ export default function MetronomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-dark-blue p-4">
       <div className="max-w-2xl mx-auto">
         <header className="mb-8">
           <Link href="/" className="inline-flex items-center text-blue-700 hover:text-blue-800 mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al inicio
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Metrónomo</h1>
+          <h1 className="text-3xl font-bold text-blue">Metrónomo __</h1>
         </header>
 
         <Card className="mb-6">
@@ -150,18 +150,8 @@ export default function MetronomePage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="pt-6">
-            <h3 className="font-semibold text-yellow-800 mb-2">Próximas funcionalidades</h3>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• Integración completa con Tone.js para audio de alta calidad</li>
-              <li>• Múltiples sonidos de metrónomo (click, stick, etc.)</li>
-              <li>• Acentos personalizables para el primer beat</li>
-              <li>• Compases complejos (3/4, 5/4, 7/8, etc.)</li>
-              <li>• Presets de tempo para diferentes estilos musicales</li>
-            </ul>
-          </CardContent>
-        </Card>
+
+
       </div>
     </div>
   )

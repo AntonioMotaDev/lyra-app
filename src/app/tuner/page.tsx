@@ -92,14 +92,14 @@ export default function TunerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+    <div className="min-h-screen bg-dark-blue p-4">
       <div className="max-w-2xl mx-auto">
         <header className="mb-8">
-          <Link href="/" className="inline-flex items-center text-green-700 hover:text-green-800 mb-4">
+          <Link href="/" className="inline-flex items-center text-blue-700 hover:text-blue-800 mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al inicio
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Afinador</h1>
+          <h1 className="text-3xl font-bold text-blue">Afinador</h1>
         </header>
 
         {/* Selector de modo */}
@@ -114,21 +114,21 @@ export default function TunerPage() {
                 onClick={() => setTuningMode('guitar')}
                 className="flex-1"
               >
-                🎸 Guitarra (6 cuerdas)
+                Guitarra
               </Button>
               <Button
                 variant={tuningMode === 'bass' ? 'default' : 'outline'}
                 onClick={() => setTuningMode('bass')}
                 className="flex-1"
               >
-                🎸 Bajo (4 cuerdas)
+                Bajo
               </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Display principal del afinador */}
-        <Card className={`mb-6 ${isListening ? getCentsBackground(cents) : 'bg-gray-50'}`}>
+        <Card className={`mb-6 ${isListening ? 'bg-blue' : 'bg-dark-blue'}`}>
           <CardHeader>
             <CardTitle className="text-center">
               {detectedNote ? (
@@ -141,7 +141,7 @@ export default function TunerPage() {
                   </div>
                 </div>
               ) : (
-                <div className="text-4xl text-gray-400">
+                <div className={`text-4xl ${isListening ? 'text-dark-blue' : 'text-gray-400'}`}>
                   {isListening ? 'Escuchando...' : 'Sin señal'}
                 </div>
               )}
@@ -239,18 +239,6 @@ export default function TunerPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="pt-6">
-            <h3 className="font-semibold text-yellow-800 mb-2">Próximas funcionalidades</h3>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• Integración completa con Pitchy para detección precisa de pitch</li>
-              <li>• Soporte para afinaciones alternativas (Drop D, DADGAD, etc.)</li>
-              <li>• Calibración de A4 (440Hz personalizable)</li>
-              <li>• Modo cromático para cualquier instrumento</li>
-              <li>• Historial de afinación y análisis de estabilidad</li>
-            </ul>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

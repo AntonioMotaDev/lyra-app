@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Lyra - Tu Compañero Musical",
-  description: "Aplicación web para músicos con metrónomo y afinador de guitarra/bajo. Herramientas musicales profesionales en tu navegador.",
+  title: "Lyra ",
+  description: "Aplicación web con metrónomo y afinador.",
   keywords: ["música", "metrónomo", "afinador", "guitarra", "bajo", "herramientas musicales"],
   authors: [{ name: "Lyra Team" }],
   openGraph: {
@@ -35,10 +35,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={inter.variable}>
+    <html lang="es" className={`${inter.variable} dark`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="theme-color" content="#3b82f6" />
+        <meta name="theme-color" content="#00051F" />
       </head>
       <body className="font-sans antialiased">
         {children}
