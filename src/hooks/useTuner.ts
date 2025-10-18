@@ -1,6 +1,7 @@
+
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
 // TODO: Importar Pitchy cuando esté completamente integrado
 // import { Pitchy } from 'pitchy'
@@ -32,7 +33,7 @@ export const useTuner = () => {
   const animationFrameRef = useRef<number | null>(null)
 
   // Notas cromáticas para conversión de frecuencia a nota
-  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  const noteNames = useMemo(() => ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'], [])
   
   const frequencyToNote = useCallback((frequency: number): { note: string, cents: number } => {
     const A4 = 440

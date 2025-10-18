@@ -43,7 +43,7 @@ export default function TunerPage() {
   useEffect(() => {
     const checkBrowserSupport = () => {
       const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-      const hasAudioContext = !!(window.AudioContext || (window as any).webkitAudioContext)
+      const hasAudioContext = !!(window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)
       
       if (!hasMediaDevices || !hasAudioContext) {
         setIsSupported(false)
@@ -85,9 +85,11 @@ export default function TunerPage() {
       
       // TODO: Configurar AudioContext y AnalyserNode para Pitchy
       // Manejar prefijo webkit para navegadores más antiguos
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-      audioContextRef.current = new AudioContextClass()
-      analyserRef.current = audioContextRef.current.createAnalyser()
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass()
+        analyserRef.current = audioContextRef.current.createAnalyser()
+      }
       
     } catch (error) {
       console.error('Error accessing microphone:', error)
@@ -117,12 +119,6 @@ export default function TunerPage() {
     if (Math.abs(cents) <= 5) return 'text-green-600'
     if (Math.abs(cents) <= 15) return 'text-yellow-600'
     return 'text-red-600'
-  }
-
-  const getCentsBackground = (cents: number) => {
-    if (Math.abs(cents) <= 5) return 'bg-green-100 border-green-300'
-    if (Math.abs(cents) <= 15) return 'bg-yellow-100 border-yellow-300'
-    return 'bg-red-100 border-red-300'
   }
 
   return (

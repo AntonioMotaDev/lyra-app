@@ -75,18 +75,6 @@ export const useMetronome = () => {
     }
   }, [])
 
-  const playClick = useCallback((isAccent: boolean = false) => {
-    if (!synthRef.current) return
-    
-    try {
-      // Usar diferentes frecuencias para acentos y beats normales
-      const frequency = isAccent ? "C5" : "C4"
-      // Usar Tone.now() + pequeño offset para evitar conflictos de tiempo
-      synthRef.current.triggerAttackRelease(frequency, "32n", Tone.now())
-    } catch (error) {
-      console.error('Error reproduciendo click:', error)
-    }
-  }, [])
 
   const start = useCallback(async () => {
     if (state.isPlaying) return
@@ -136,7 +124,7 @@ export const useMetronome = () => {
     // Iniciar la secuencia
     sequenceRef.current.start(0)
     Tone.getTransport().start()
-  }, [state.bpm, state.subdivision, initializeAudio])
+    }, [state.bpm, state.subdivision, initializeAudio, state.isPlaying])
 
   const stop = useCallback(() => {
     // Detener transport de Tone.js
