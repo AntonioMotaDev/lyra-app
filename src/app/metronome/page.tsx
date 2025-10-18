@@ -1,48 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { ArrowLeft, Play, Pause } from 'lucide-react'
+import { useMetronome } from '@/hooks/useMetronome'
 
 export default function MetronomePage() {
-  const [bpm, setBpm] = useState([120])
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [subdivision, setSubdivision] = useState('quarter')
-  const [currentBeat, setCurrentBeat] = useState(0)
-
-  // TODO: Integrar con Tone.js para la funcionalidad de audio
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    
-    if (isPlaying) {
-      const beatInterval = 60000 / bpm[0] // Convertir BPM a milisegundos
-      interval = setInterval(() => {
-        setCurrentBeat(prev => prev + 1)
-        // TODO: Reproducir sonido del metrónomo con Tone.js
-        console.log(`Beat: ${currentBeat + 1}, BPM: ${bpm[0]}`)
-      }, beatInterval)
-    }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isPlaying, bpm, currentBeat])
-
-  const togglePlayback = () => {
-    setIsPlaying(!isPlaying)
-    if (!isPlaying) {
-      setCurrentBeat(0)
-    }
-  }
+  const {
+    bpm,
+    isPlaying,
+    currentBeat,
+    subdivision,
+    volume,
+    toggle,
+    setBpm,
+    setSubdivision,
+    setVolume
+  } = useMetronome()
 
   const subdivisions = [
-    { value: 'quarter', label: '♩ Negras', multiplier: 1 },
-    { value: 'eighth', label: '♫ Corcheas', multiplier: 2 },
-    { value: 'triplet', label: '♫♫♫ Tresillos', multiplier: 3 },
-    { value: 'sixteenth', label: '♬ Semicorcheas', multiplier: 4 }
+    { value: 'quarter' as const, label: '♩ Negras', multiplier: 1 },
+    { value: 'eighth' as const, label: '♫ Corcheas', multiplier: 2 },
+    { value: 'triplet' as const, label: '♫♫♫ Tresillos', multiplier: 3 },
+    { value: 'sixteenth' as const, label: '♬ Semicorcheas', multiplier: 4 }
   ]
 
   return (
@@ -53,14 +35,14 @@ export default function MetronomePage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al inicio
           </Link>
-          <h1 className="text-3xl font-bold text-blue">Metrónomo __</h1>
+          <h1 className="text-3xl font-bold text-blue">Metrónomo </h1>
         </header>
 
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center">
               <div className={`text-6xl font-mono ${isPlaying ? 'text-blue-600' : 'text-gray-400'}`}>
-                {bpm[0]}
+                {bpm}
               </div>
               <div className="text-sm text-gray-600 mt-2">BPM</div>
             </CardTitle>
@@ -69,11 +51,11 @@ export default function MetronomePage() {
             {/* Control de BPM */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tempo: {bpm[0]} BPM
+                Tempo: {bpm} BPM
               </label>
               <Slider
-                value={bpm}
-                onValueChange={setBpm}
+                value={[bpm]}
+                onValueChange={(value) => setBpm(value[0])}
                 max={200}
                 min={40}
                 step={1}
@@ -82,6 +64,25 @@ export default function MetronomePage() {
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>40</span>
                 <span>200</span>
+              </div>
+            </div>
+
+            {/* Control de volumen */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Volumen: {Math.round(volume * 100)}%
+              </label>
+              <Slider
+                value={[volume * 100]}
+                onValueChange={(value) => setVolume(value[0] / 100)}
+                max={100}
+                min={0}
+                step={5}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0%</span>
+                <span>100%</span>
               </div>
             </div>
 
@@ -108,7 +109,7 @@ export default function MetronomePage() {
             {/* Control de reproducción */}
             <div className="text-center">
               <Button
-                onClick={togglePlayback}
+                onClick={toggle}
                 size="lg"
                 className={`w-32 h-32 rounded-full ${
                   isPlaying 
@@ -131,11 +132,11 @@ export default function MetronomePage() {
             {isPlaying && (
               <div className="text-center">
                 <div className="flex justify-center space-x-2">
-                  {[1, 2, 3, 4].map((beat) => (
+                  {[0, 1, 2, 3].map((beat) => (
                     <div
                       key={beat}
                       className={`w-4 h-4 rounded-full ${
-                        (currentBeat % 4) + 1 === beat 
+                        currentBeat === beat 
                           ? 'bg-blue-600' 
                           : 'bg-gray-300'
                       }`}
@@ -143,7 +144,7 @@ export default function MetronomePage() {
                   ))}
                 </div>
                 <div className="text-xs text-gray-500 mt-2">
-                  Beat {(currentBeat % 4) + 1} de 4
+                  Beat {currentBeat + 1} de 4
                 </div>
               </div>
             )}

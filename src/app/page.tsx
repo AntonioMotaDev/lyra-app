@@ -4,55 +4,99 @@ import { Button } from '@/components/ui/button'
 
 export default function Home() {
   return (
-    <div className="min-h-screen  p-4 bg-dark-blue dark:bg-rich-black text-rich-black dark:text-gray-200">
-      <div className="max-w-4xl mx-auto">
-      <header className="text-center mb-8 p-6">
+    <div className="min-h-screen bg-rich-black text-vivid-sky-blue">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-oxford-blue/20 via-rich-black to-rich-black"></div>
+      
+      <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
+        {/* Header */}
+        <header className="text-center mb-20">
+          <div className="space-y-6">
+            <h1 className="text-6xl md:text-7xl font-light tracking-wide text-vivid-sky-blue">
+              Lyra
+            </h1>
+            <p className="text-xl text-celestial-blue/80 font-light max-w-2xl mx-auto leading-relaxed">
+              Herramienta en constante evolucion. Metrónomo y Afinador. v 0.1
+            </p>
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-celestial-blue to-transparent mx-auto"></div>
+          </div>
+        </header>
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-light-blue mb-2">Lyra</h1>
-          <p className="text-lg text-gray-300 mb-0"></p>
-        </div>
-      </header>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-2xl text-blue">Metrónomo</CardTitle>
-              <CardDescription>
-                
+        {/* Main content */}
+        <div className="grid md:grid-cols-2 gap-8 mb-20">
+          {/* Metronome Card */}
+          <Card className="group bg-oxford-blue/40 border-cerulean/20 backdrop-blur-sm hover:bg-oxford-blue/60 hover:border-celestial-blue/40 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-celestial-blue/10">
+            <CardHeader className="pb-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-3 h-3 rounded-full bg-celestial-blue animate-pulse"></div>
+                <CardTitle className="text-2xl font-light text-vivid-sky-blue">
+                  Metrónomo
+                </CardTitle>
+              </div>
+              <CardDescription className="text-cerulean/80 font-light">
+                Control de tempo preciso y profesional
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ul className="list-disc list-inside text-sm text-gray-600 mb-4">
-                <li>Control de BPM de 40 a 200</li>
-                <li>Subdivisiones rítmicas</li>
-              </ul>
-              <Link href="/metronome">
-                <Button className="w-full">Abrir Metrónomo</Button>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 text-celestial-blue/70">
+                  <div className="w-1.5 h-1.5 rounded-full bg-celestial-blue"></div>
+                  <span className="text-sm font-light">Control de BPM de 40 a 200</span>
+                </div>
+                <div className="flex items-center space-x-3 text-celestial-blue/70">
+                  <div className="w-1.5 h-1.5 rounded-full bg-celestial-blue"></div>
+                  <span className="text-sm font-light">Subdivisiones rítmicas</span>
+                </div>
+              </div>
+              <Link href="/metronome" className="block">
+                <Button className="w-full bg-celestial-blue/20 hover:bg-celestial-blue/40 border border-celestial-blue/40 hover:border-celestial-blue text-vivid-sky-blue font-light py-6 transition-all duration-300 hover:shadow-lg hover:shadow-celestial-blue/20">
+                  Abrir Metrónomo
+                </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-2xl text-blue">Afinador</CardTitle>
-              <CardDescription>
+          {/* Tuner Card */}
+          <Card className="group bg-oxford-blue/40 border-cerulean/20 backdrop-blur-sm hover:bg-oxford-blue/60 hover:border-celestial-blue/40 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-celestial-blue/10">
+            <CardHeader className="pb-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-3 h-3 rounded-full bg-celestial-blue animate-pulse"></div>
+                <CardTitle className="text-2xl font-light text-vivid-sky-blue">
+                  Afinador
+                </CardTitle>
+              </div>
+              <CardDescription className="text-cerulean/80 font-light">
+                Afinación precisa para instrumentos de cuerda
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ul className="list-disc list-inside text-sm text-gray-600 mb-4">
-                <li>Compatible con guitarra y bajo</li>
-                <li>Visualización clara</li>
-              </ul>
-              <Link href="/tuner">
-                <Button className="w-full">Abrir Afinador</Button>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 text-celestial-blue/70">
+                  <div className="w-1.5 h-1.5 rounded-full bg-celestial-blue"></div>
+                  <span className="text-sm font-light">Compatible con guitarra y bajo</span>
+                </div>
+                <div className="flex items-center space-x-3 text-celestial-blue/70">
+                  <div className="w-1.5 h-1.5 rounded-full bg-celestial-blue"></div>
+                  <span className="text-sm font-light">Visualización clara y precisa</span>
+                </div>
+              </div>
+              <Link href="/tuner" className="block">
+                <Button className="w-full bg-celestial-blue/20 hover:bg-celestial-blue/40 border border-celestial-blue/40 hover:border-celestial-blue text-vivid-sky-blue font-light py-6 transition-all duration-300 hover:shadow-lg hover:shadow-celestial-blue/20">
+                  Abrir Afinador
+                </Button>
               </Link>
             </CardContent>
           </Card>
         </div>
 
-        <footer className="text-center mt-12 text-gray-500">
-          <p>V 0.1</p>
+        {/* Footer */}
+        <footer className="text-center">
+          <div className="space-y-4">
+            <div className="w-16 h-px bg-gradient-to-r from-transparent via-cerulean/40 to-transparent mx-auto"></div>
+            <p className="text-cerulean/60 text-sm font-light tracking-wider">
+              Versión 0.1
+            </p>
+          </div>
         </footer>
       </div>
     </div>

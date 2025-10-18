@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-
-// TODO: Importar Tone.js cuando esté completamente integrado
-// import * as Tone from 'tone'
+import * as Tone from 'tone'
 
 interface MetronomeState {
   bpm: number
@@ -23,39 +21,88 @@ export const useMetronome = () => {
   })
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  // TODO: Configurar Tone.js cuando esté integrado
-  // const toneRef = useRef<Tone.Player | null>(null)
+  const synthRef = useRef<Tone.Synth | null>(null)
+  const sequenceRef = useRef<Tone.Sequence | null>(null)
+  const isInitialized = useRef(false)
 
-  // TODO: Inicializar Tone.js
-  useEffect(() => {
-    // Ejemplo de configuración que se implementará:
-    // toneRef.current = new Tone.Player({
-    //   url: "/metronome-click.wav",
-    //   volume: state.volume
-    // }).toDestination()
+  // Inicializar Tone.js
+  const initializeAudio = useCallback(async () => {
+    if (isInitialized.current) return
     
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    try {
+      // Asegurar que el contexto de audio esté iniciado
+      if (Tone.getContext().state !== 'running') {
+        await Tone.start()
       }
-      // TODO: Limpiar recursos de Tone.js
-      // toneRef.current?.dispose()
+      
+      // Crear un sintetizador para el click del metrónomo
+      synthRef.current = new Tone.Synth({
+        oscillator: {
+          type: "square"
+        },
+        envelope: {
+          attack: 0.01,
+          decay: 0.1,
+          sustain: 0,
+          release: 0.1
+        }
+      }).toDestination()
+      
+      synthRef.current.volume.value = Tone.gainToDb(state.volume)
+      isInitialized.current = true
+    } catch (error) {
+      console.error('Error inicializando audio:', error)
     }
   }, [state.volume])
 
-  const playClick = useCallback(() => {
-    // TODO: Reproducir sonido con Tone.js
-    // toneRef.current?.start()
-    
-    // Por ahora, solo logging para demostración
-    console.log(`Click - Beat: ${state.currentBeat + 1}, BPM: ${state.bpm}`)
-  }, [state.currentBeat, state.bpm])
+  useEffect(() => {
+    return () => {
+      // Limpiar todo al desmontar el componente
+      Tone.getTransport().stop()
+      
+      if (sequenceRef.current) {
+        sequenceRef.current.stop()
+        sequenceRef.current.dispose()
+      }
+      
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+      
+      if (synthRef.current) {
+        synthRef.current.dispose()
+      }
+    }
+  }, [])
 
-  const start = useCallback(() => {
-    if (intervalRef.current) return
+  const playClick = useCallback((isAccent: boolean = false) => {
+    if (!synthRef.current) return
+    
+    try {
+      // Usar diferentes frecuencias para acentos y beats normales
+      const frequency = isAccent ? "C5" : "C4"
+      // Usar Tone.now() + pequeño offset para evitar conflictos de tiempo
+      synthRef.current.triggerAttackRelease(frequency, "32n", Tone.now())
+    } catch (error) {
+      console.error('Error reproduciendo click:', error)
+    }
+  }, [])
+
+  const start = useCallback(async () => {
+    if (state.isPlaying) return
+
+    // Inicializar audio si no está inicializado
+    await initializeAudio()
 
     setState(prev => ({ ...prev, isPlaying: true, currentBeat: 0 }))
 
+    // Detener secuencia anterior si existe
+    if (sequenceRef.current) {
+      sequenceRef.current.stop()
+      sequenceRef.current.dispose()
+    }
+
+    // Configurar el tempo en Tone.js
     const subdivisionMultiplier = {
       quarter: 1,
       eighth: 2,
@@ -63,22 +110,51 @@ export const useMetronome = () => {
       sixteenth: 4
     }[state.subdivision]
 
-    const interval = 60000 / (state.bpm * subdivisionMultiplier)
+    // Calcular BPM efectivo con subdivisión
+    const effectiveBPM = state.bpm * subdivisionMultiplier
+    Tone.getTransport().bpm.value = effectiveBPM
 
-    intervalRef.current = setInterval(() => {
-      playClick()
-      setState(prev => ({
-        ...prev,
-        currentBeat: (prev.currentBeat + 1) % 4
-      }))
-    }, interval)
-  }, [state.bpm, state.subdivision, playClick])
+    // Crear secuencia de clicks
+    sequenceRef.current = new Tone.Sequence((time, step) => {
+      // Programar el click en el tiempo exacto
+      const isAccent = step === 0 // Primer beat es acentuado
+      const frequency = isAccent ? "C5" : "C4"
+      
+      if (synthRef.current) {
+        synthRef.current.triggerAttackRelease(frequency, "32n", time)
+      }
+
+      // Actualizar el estado visual en el siguiente frame
+      Tone.getDraw().schedule(() => {
+        setState(prev => ({
+          ...prev,
+          currentBeat: step
+        }))
+      }, time)
+    }, [0, 1, 2, 3], "4n")
+
+    // Iniciar la secuencia
+    sequenceRef.current.start(0)
+    Tone.getTransport().start()
+  }, [state.bpm, state.subdivision, initializeAudio])
 
   const stop = useCallback(() => {
+    // Detener transport de Tone.js
+    Tone.getTransport().stop()
+    
+    // Detener y limpiar secuencia
+    if (sequenceRef.current) {
+      sequenceRef.current.stop()
+      sequenceRef.current.dispose()
+      sequenceRef.current = null
+    }
+    
+    // Limpiar interval si existe (fallback)
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
+    
     setState(prev => ({ ...prev, isPlaying: false, currentBeat: 0 }))
   }, [])
 
@@ -91,28 +167,46 @@ export const useMetronome = () => {
   }, [state.isPlaying, start, stop])
 
   const setBpm = useCallback((newBpm: number) => {
-    setState(prev => ({ ...prev, bpm: Math.max(40, Math.min(200, newBpm)) }))
+    const clampedBpm = Math.max(40, Math.min(200, newBpm))
+    setState(prev => ({ ...prev, bpm: clampedBpm }))
     
-    // Reiniciar si está reproduciendo para aplicar el nuevo BPM
+    // Actualizar BPM en tiempo real si está reproduciendo
     if (state.isPlaying) {
-      stop()
-      setTimeout(start, 50) // Pequeño delay para evitar conflictos
+      const subdivisionMultiplier = {
+        quarter: 1,
+        eighth: 2,
+        triplet: 3,
+        sixteenth: 4
+      }[state.subdivision]
+      
+      const effectiveBPM = clampedBpm * subdivisionMultiplier
+      Tone.getTransport().bpm.rampTo(effectiveBPM, 0.1) // Transición suave
     }
-  }, [state.isPlaying, start, stop])
+  }, [state.isPlaying, state.subdivision])
 
   const setSubdivision = useCallback((subdivision: MetronomeState['subdivision']) => {
     setState(prev => ({ ...prev, subdivision }))
     
-    // Reiniciar si está reproduciendo para aplicar la nueva subdivisión
+    // Reiniciar con nueva subdivisión si está reproduciendo
     if (state.isPlaying) {
       stop()
-      setTimeout(start, 50)
+      // Usar requestAnimationFrame para asegurar que el stop se complete
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          start()
+        }, 100)
+      })
     }
   }, [state.isPlaying, start, stop])
 
   const setVolume = useCallback((volume: number) => {
-    setState(prev => ({ ...prev, volume: Math.max(0, Math.min(1, volume)) }))
-    // TODO: Aplicar volumen a Tone.js
+    const newVolume = Math.max(0, Math.min(1, volume))
+    setState(prev => ({ ...prev, volume: newVolume }))
+    
+    // Aplicar volumen a Tone.js
+    if (synthRef.current) {
+      synthRef.current.volume.value = Tone.gainToDb(newVolume)
+    }
   }, [])
 
   return {

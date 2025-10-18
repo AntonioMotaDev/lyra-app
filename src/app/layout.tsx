@@ -11,10 +11,10 @@ export const metadata: Metadata = {
   title: "Lyra ",
   description: "Aplicación web con metrónomo y afinador.",
   keywords: ["música", "metrónomo", "afinador", "guitarra", "bajo", "herramientas musicales"],
-  authors: [{ name: "Lyra Team" }],
+  authors: [{ name: "AntonioMota" }],
   openGraph: {
-    title: "Lyra - Tu Compañero Musical",
-    description: "Herramientas musicales profesionales: metrónomo y afinador para guitarra y bajo",
+    title: "Lyra",
+    description: "Herramientas musicales: metrónomo y afinador para guitarra y bajo",
     type: "website",
     locale: "es_ES",
   },

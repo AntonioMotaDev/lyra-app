@@ -13,6 +13,7 @@ export default function TunerPage() {
   const [cents, setCents] = useState<number>(0)
   const [tuningMode, setTuningMode] = useState<'guitar' | 'bass'>('guitar')
   const [hasPermission, setHasPermission] = useState<boolean>(false)
+  const [isSupported, setIsSupported] = useState<boolean>(true)
   
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
@@ -38,6 +39,21 @@ export default function TunerPage() {
 
   const currentNotes = tuningMode === 'guitar' ? guitarNotes : bassNotes
 
+  // Verificar compatibilidad del navegador al montar el componente
+  useEffect(() => {
+    const checkBrowserSupport = () => {
+      const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+      const hasAudioContext = !!(window.AudioContext || (window as any).webkitAudioContext)
+      
+      if (!hasMediaDevices || !hasAudioContext) {
+        setIsSupported(false)
+        console.warn('Browser does not support required audio APIs')
+      }
+    }
+
+    checkBrowserSupport()
+  }, [])
+
   // TODO: Implementar detección de pitch con Pitchy
   useEffect(() => {
     if (isListening && hasPermission) {
@@ -58,21 +74,39 @@ export default function TunerPage() {
 
   const requestMicrophonePermission = async () => {
     try {
+      // Verificar si el navegador soporta getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('getUserMedia no está soportado en este navegador')
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       setHasPermission(true)
       streamRef.current = stream
       
       // TODO: Configurar AudioContext y AnalyserNode para Pitchy
-      audioContextRef.current = new AudioContext()
+      // Manejar prefijo webkit para navegadores más antiguos
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+      audioContextRef.current = new AudioContextClass()
       analyserRef.current = audioContextRef.current.createAnalyser()
       
     } catch (error) {
       console.error('Error accessing microphone:', error)
       setHasPermission(false)
+      // Mostrar un mensaje de error más específico al usuario
+      if (error instanceof Error && error.message.includes('getUserMedia no está soportado')) {
+        alert('Tu navegador no soporta el acceso al micrófono. Por favor, usa un navegador moderno como Chrome, Firefox o Safari.')
+      } else {
+        alert('No se pudo acceder al micrófono. Asegúrate de que has dado permisos y que estás usando HTTPS.')
+      }
     }
   }
 
   const toggleListening = () => {
+    if (!isSupported) {
+      alert('Tu navegador no soporta las APIs necesarias para el afinador. Por favor, usa un navegador moderno como Chrome, Firefox o Safari con HTTPS.')
+      return
+    }
+    
     if (!hasPermission) {
       requestMicrophonePermission()
     }
@@ -126,6 +160,22 @@ export default function TunerPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Mensaje de navegador no compatible */}
+        {!isSupported && (
+          <Card className="mb-6 border-red-300 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="text-center text-red-700">
+                <p className="font-semibold mb-2">Navegador no compatible</p>
+                <p className="text-sm">
+                  Tu navegador no soporta las APIs necesarias para el afinador. 
+                  Por favor, usa un navegador moderno como Chrome, Firefox o Safari 
+                  y asegúrate de estar usando HTTPS.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Display principal del afinador */}
         <Card className={`mb-6 ${isListening ? 'bg-blue' : 'bg-dark-blue'}`}>
@@ -187,11 +237,14 @@ export default function TunerPage() {
             <div className="text-center mt-6">
               <Button
                 onClick={toggleListening}
+                disabled={!isSupported}
                 size="lg"
                 className={`w-24 h-24 rounded-full ${
-                  isListening 
-                    ? 'bg-red-600 hover:bg-red-700' 
-                    : 'bg-green-600 hover:bg-green-700'
+                  !isSupported
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : isListening 
+                      ? 'bg-red-600 hover:bg-red-700' 
+                      : 'bg-green-600 hover:bg-green-700'
                 }`}
               >
                 {isListening ? (
