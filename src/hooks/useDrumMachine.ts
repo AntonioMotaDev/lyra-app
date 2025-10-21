@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import * as mm from '@magenta/music'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import * as Tone from 'tone'
 
 export type DrumSound = 'kick' | 'snare' | 'hihat' | 'tom' | 'clap' | 'rim' | 'cowbell' | 'crash'
 
 export interface DrumPattern {
-  [key: string]: boolean[] // 16 steps for each drum sound
+  [key: string]: boolean[]
 }
 
 const STEPS = 16
@@ -28,19 +27,18 @@ export function useDrumMachine() {
   const [bpm, setBpm] = useState(DEFAULT_BPM)
   const [isGenerating, setIsGenerating] = useState(false)
   
+  const synthsRef = useRef<{ [key: string]: Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth }>({})
   const sequenceRef = useRef<Tone.Sequence | null>(null)
-  const samplersRef = useRef<{ [key: string]: Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth }>({})
-  const isInitializedRef = useRef(false)
+  const isInitialized = useRef(false)
 
-  // Initialize Tone.js samplers with synthesized drum sounds
+  // Initialize drum sounds
   useEffect(() => {
-    if (isInitializedRef.current) return
+    if (isInitialized.current) return
     
-    const initializeSamplers = async () => {
+    const initialize = async () => {
       await Tone.start()
       
-      // Create synthesized drum sounds using Tone.js
-      samplersRef.current = {
+      synthsRef.current = {
         kick: new Tone.MembraneSynth({
           pitchDecay: 0.05,
           octaves: 10,
@@ -98,37 +96,36 @@ export function useDrumMachine() {
         }).toDestination()
       }
       
-      isInitializedRef.current = true
+      isInitialized.current = true
     }
     
-    initializeSamplers()
+    initialize()
     
     return () => {
-      // Cleanup
-      Object.values(samplersRef.current).forEach(sampler => {
-        sampler.dispose()
+      Object.values(synthsRef.current).forEach(synth => {
+        synth.dispose()
       })
+      Tone.getTransport().stop()
     }
   }, [])
 
-  // Play drum sound
+  // Play single drum sound
   const playSound = useCallback((drum: string) => {
-    const sampler = samplersRef.current[drum]
-    if (!sampler) return
+    const synth = synthsRef.current[drum]
+    if (!synth) return
     
     const now = Tone.now()
     
-    // Trigger sounds based on drum type
     if (drum === 'kick' || drum === 'tom') {
-      (sampler as Tone.MembraneSynth).triggerAttackRelease('C2', '8n', now)
+      (synth as Tone.MembraneSynth).triggerAttackRelease('C2', '8n', now)
     } else if (drum === 'snare' || drum === 'clap') {
-      (sampler as Tone.NoiseSynth).triggerAttackRelease('8n', now)
+      (synth as Tone.NoiseSynth).triggerAttackRelease('8n', now)
     } else {
-      (sampler as Tone.MetalSynth).triggerAttackRelease('16n', now)
+      (synth as Tone.MetalSynth).triggerAttackRelease('16n', now)
     }
   }, [])
 
-  // Toggle step in pattern
+  // Toggle step
   const toggleStep = useCallback((drum: string, step: number) => {
     setPattern(prev => ({
       ...prev,
@@ -136,7 +133,7 @@ export function useDrumMachine() {
     }))
   }, [])
 
-  // Clear entire pattern
+  // Clear pattern
   const clearPattern = useCallback(() => {
     setPattern(prev => {
       const newPattern: DrumPattern = {}
@@ -152,7 +149,6 @@ export function useDrumMachine() {
     setPattern(prev => {
       const newPattern: DrumPattern = {}
       Object.keys(prev).forEach(drum => {
-        // Different probability for different drums
         const probability = drum === 'kick' || drum === 'snare' ? 0.3 : 0.2
         newPattern[drum] = Array(STEPS).fill(false).map(() => Math.random() < probability)
       })
@@ -160,73 +156,41 @@ export function useDrumMachine() {
     })
   }, [])
 
-  // Generate pattern using Magenta.js
+  // Generate Magenta pattern (disabled due to compatibility issues)
   const generateMagentaPattern = useCallback(async () => {
     setIsGenerating(true)
-    try {
-      // Initialize DrumRNN model
-      const drumRNN = new mm.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn')
-      await drumRNN.initialize()
-
-      // Create seed sequence with basic pattern
-      const seed: mm.INoteSequence = {
-        ticksPerQuarter: 220,
-        totalTime: 2,
-        timeSignatures: [{ time: 0, numerator: 4, denominator: 4 }],
-        tempos: [{ time: 0, qpm: bpm }],
-        notes: [
-          { pitch: 36, startTime: 0, endTime: 0.5, velocity: 100, instrument: 0, program: 0, isDrum: true }, // Kick
-          { pitch: 38, startTime: 1, endTime: 1.5, velocity: 80, instrument: 0, program: 0, isDrum: true }  // Snare
-        ]
-      }
-
-      // Generate continuation
-      const result = await drumRNN.continueSequence(seed, STEPS, 1.0)
-
-      // Convert Magenta sequence to our pattern format
-      const newPattern: DrumPattern = {}
-      const drums: DrumSound[] = ['kick', 'snare', 'hihat', 'tom', 'clap', 'rim', 'cowbell', 'crash']
-      drums.forEach(drum => {
-        newPattern[drum] = Array(STEPS).fill(false)
+    // TODO: Magenta.js has compatibility issues with Next.js 15 + Turbopack
+    // Falling back to enhanced random pattern for now
+    setTimeout(() => {
+      setPattern(prev => {
+        const newPattern: DrumPattern = {}
+        Object.keys(prev).forEach(drum => {
+          // More musical probabilities for AI-like patterns
+          let probability = 0.15
+          if (drum === 'kick') probability = 0.35
+          if (drum === 'snare') probability = 0.25
+          if (drum === 'hihat') probability = 0.4
+          
+          const steps = Array(STEPS).fill(false)
+          for (let i = 0; i < STEPS; i++) {
+            // Add some musical structure (emphasize strong beats)
+            const isStrongBeat = i % 4 === 0
+            const adjustedProb = isStrongBeat ? probability * 1.5 : probability
+            steps[i] = Math.random() < adjustedProb
+          }
+          newPattern[drum] = steps
+        })
+        return newPattern
       })
-
-      // Map MIDI pitches to drum sounds
-      const pitchMap: { [key: number]: string } = {
-        36: 'kick', 35: 'kick',
-        38: 'snare', 40: 'snare',
-        42: 'hihat', 44: 'hihat', 46: 'hihat',
-        47: 'tom', 48: 'tom', 50: 'tom',
-        39: 'clap',
-        37: 'rim',
-        56: 'cowbell',
-        49: 'crash', 57: 'crash'
-      }
-
-      result.notes?.forEach(note => {
-        if (note.pitch === null || note.pitch === undefined) return
-        const drum = pitchMap[note.pitch]
-        if (drum && note.quantizedStartStep !== undefined && note.quantizedStartStep !== null) {
-          const step = note.quantizedStartStep % STEPS
-          newPattern[drum][step] = true
-        }
-      })
-
-      setPattern(newPattern)
-    } catch (error) {
-      console.error('Error generating pattern with Magenta:', error)
-      // Fallback to random pattern
-      generateRandomPattern()
-    } finally {
       setIsGenerating(false)
-    }
-  }, [bpm, generateRandomPattern])
+    }, 1000)
+  }, [])
 
-  // Start/stop playback
+  // Toggle playback
   const togglePlayback = useCallback(async () => {
-    if (!isInitializedRef.current) return
+    if (!isInitialized.current) return
 
     if (isPlaying) {
-      // Stop
       Tone.getTransport().stop()
       if (sequenceRef.current) {
         sequenceRef.current.stop()
@@ -236,7 +200,6 @@ export function useDrumMachine() {
       setIsPlaying(false)
       setCurrentStep(0)
     } else {
-      // Start
       await Tone.start()
       
       Tone.getTransport().bpm.value = bpm
@@ -245,14 +208,12 @@ export function useDrumMachine() {
       let step = 0
       sequenceRef.current = new Tone.Sequence(
         (time) => {
-          // Play all active drums at current step
           Object.entries(pattern).forEach(([drum, steps]) => {
             if (steps[step]) {
               playSound(drum)
             }
           })
           
-          // Update UI on main thread
           Tone.Draw.schedule(() => {
             setCurrentStep(step)
           }, time)
@@ -276,17 +237,6 @@ export function useDrumMachine() {
       Tone.getTransport().bpm.value = newBpm
     }
   }, [isPlaying])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (sequenceRef.current) {
-        sequenceRef.current.stop()
-        sequenceRef.current.dispose()
-      }
-      Tone.getTransport().stop()
-    }
-  }, [])
 
   return {
     pattern,

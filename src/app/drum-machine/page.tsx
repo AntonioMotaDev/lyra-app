@@ -10,7 +10,7 @@ import { useDrumMachine, DrumSound } from '@/hooks/useDrumMachine'
 const DRUM_CONFIG: { sound: DrumSound; label: string; icon: string }[] = [
   { sound: 'kick', label: 'Kick', icon: '🥁' },
   { sound: 'snare', label: 'Snare', icon: '🎯' },
-  { sound: 'hihat', label: 'Hi-Hat', icon: '🎩' },
+  { sound: 'hihat', label: 'Hi-Hat', icon: '🎩' },  
   { sound: 'tom', label: 'Tom', icon: '🪘' },
   { sound: 'clap', label: 'Clap', icon: '👏' },
   { sound: 'rim', label: 'Rim', icon: '⭕' },
@@ -105,7 +105,7 @@ export default function DrumMachinePage() {
 
                       {/* Steps */}
                       <div className="flex flex-1">
-                        {pattern[sound]?.map((active, stepIndex) => (
+                        {pattern[sound]?.map((active: boolean, stepIndex: number) => (
                           <button
                             key={stepIndex}
                             onClick={() => toggleStep(sound, stepIndex)}
