@@ -23,7 +23,7 @@ export default function Home() {
         </header>
 
         {/* Main content */}
-        <div className="grid md:grid-cols-2 gap-8 mb-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {/* Metronome Card */}
           <Card className="group bg-oxford-blue/40 border-cerulean/20 backdrop-blur-sm hover:bg-oxford-blue/60 hover:border-celestial-blue/40 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-celestial-blue/10">
             <CardHeader className="pb-4">
@@ -83,6 +83,38 @@ export default function Home() {
               <Link href="/tuner" className="block">
                 <Button className="w-full bg-celestial-blue/20 hover:bg-celestial-blue/40 border border-celestial-blue/40 hover:border-celestial-blue text-vivid-sky-blue font-light py-6 transition-all duration-300 hover:shadow-lg hover:shadow-celestial-blue/20">
                   Abrir Afinador
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Drum Machine Card */}
+          <Card className="group bg-oxford-blue/40 border-cerulean/20 backdrop-blur-sm hover:bg-oxford-blue/60 hover:border-celestial-blue/40 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-celestial-blue/10">
+            <CardHeader className="pb-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-3 h-3 rounded-full bg-celestial-blue animate-pulse"></div>
+                <CardTitle className="text-2xl font-light text-vivid-sky-blue">
+                  Drum Machine
+                </CardTitle>
+              </div>
+              <CardDescription className="text-cerulean/80 font-light">
+                Crea patrones rítmicos con IA
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 text-celestial-blue/70">
+                  <div className="w-1.5 h-1.5 rounded-full bg-celestial-blue"></div>
+                  <span className="text-sm font-light">Generación con Magenta.js</span>
+                </div>
+                <div className="flex items-center space-x-3 text-celestial-blue/70">
+                  <div className="w-1.5 h-1.5 rounded-full bg-celestial-blue"></div>
+                  <span className="text-sm font-light">8 sonidos de percusión</span>
+                </div>
+              </div>
+              <Link href="/drum-machine" className="block">
+                <Button className="w-full bg-celestial-blue/20 hover:bg-celestial-blue/40 border border-celestial-blue/40 hover:border-celestial-blue text-vivid-sky-blue font-light py-6 transition-all duration-300 hover:shadow-lg hover:shadow-celestial-blue/20">
+                  Abrir Drum Machine
                 </Button>
               </Link>
             </CardContent>
