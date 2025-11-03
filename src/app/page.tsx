@@ -4,7 +4,14 @@ import { Button } from '@/components/ui/button'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-rich-black text-vivid-sky-blue">
+    <div className="min-h-screen bg-rich-black text-vivid-sky-blue overflow-hidden">
+      {/* Starry background */}
+      <div className="absolute inset-0">
+        <div className="stars"></div>
+        <div className="stars2"></div>
+        <div className="stars3"></div>
+      </div>
+      
       {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-oxford-blue/20 via-rich-black to-rich-black"></div>
       
@@ -16,7 +23,7 @@ export default function Home() {
               Lyra
             </h1>
             <p className="text-xl text-celestial-blue/80 font-light max-w-2xl mx-auto leading-relaxed">
-              Herramienta en constante evolucion. Metrónomo y Afinador. v 0.1
+              Herramienta en constante evolucion. v 0.1
             </p>
             <div className="w-24 h-px bg-gradient-to-r from-transparent via-celestial-blue to-transparent mx-auto"></div>
           </div>
